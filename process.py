@@ -1,10 +1,6 @@
-# Script pour extraire, pour chaque numéro d'étudiant, s'il a obtenu la note maximale dans au moins un des fichiers CSV du dossier data
 import os
 import csv
-import pprint
 from datetime import datetime
-
-
 
 data_dir = "data"
 deadlines_path = os.path.join(data_dir, "deadlines.csv")
@@ -17,8 +13,6 @@ with open(deadlines_path, newline='', encoding='utf-8') as f:
     for row in reader:
         # On convertit la deadline en datetime
         deadlines[row['NOM_FICHIER']] = datetime.strptime(row['DEADLINE'], "%d/%m/%Y %H:%M")
-
-
 
 for filename in os.listdir(data_dir):
     if filename.endswith("notes.csv") and filename in deadlines:
@@ -69,7 +63,8 @@ for filename in os.listdir(data_dir):
                 if num_etudiant not in resultats:
                     resultats[num_etudiant] = []
                 resultats[num_etudiant].append(note == note_max)
-        # Pour chaque étudiant, ne retenir qu'une seule réponse : True si au moins une tentative a la note max, False sinon
+        # Pour chaque étudiant, ne retenir qu'une seule réponse : 
+        # True si au moins une tentative a la note max, False sinon
         resultats_par_fichier[filename] = {num: any(notes) for num, notes in resultats.items()}
 
 # Inverser la structure : pour chaque numéro étudiant, le nb de True
@@ -79,6 +74,9 @@ for fichier, res in resultats_par_fichier.items():
         etudiants[num] = etudiants.get(num, 0) + int(val)
 
 # Écrire dans le fichier de sortie la liste des étudiants qui ont le point de bonus
+# Pour avoir le point de bonus, il faut être dans les clous dans au moins
+# n - 2 QCM, n étant le nombre total de QCM (on accorde de la flexibilité sur les 
+# deux premiers QCM)
 with open("output/list_etu.csv", "w") as fp:
     fp.write(f"NUMETU;NOMBRE_QCM_VALIDES\n")
     for num, vals in etudiants.items():
